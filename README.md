@@ -83,6 +83,14 @@ pyp2req -l /path/to/dir_with_pyproject
 which will list all of the optional groups that are defined in the project.
 Note that using this option makes the program ignore any other option specified.
 
+### Removing comments
+
+You can output a version without comments using:
+
+```sh
+pyp2reqs -c /path/to/dir_with_pyproject
+```
+
 ## License
 
 MIT

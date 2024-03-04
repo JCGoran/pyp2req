@@ -59,6 +59,12 @@ def parse_args():
         help="list all of the optional dependency types. "
         "Note that this overrides all other options",
     )
+    parser.add_argument(
+        "--comment",
+        "-c",
+        action="store_false",
+        help="disable comments",
+    )
     return parser.parse_args()
 
 
@@ -139,18 +145,21 @@ def main():
                 deps["optional-dependencies"][opt_dep].append(package)
 
     if deps["build-system"]:
-        print("# build time dependencies")
+        if args.comment:
+            print("# build time dependencies")
         for package in deps["build-system"]:
             print(package)
 
     if deps["dependencies"]:
-        print("# run time dependencies")
+        if args.comment:
+            print("# run time dependencies")
         for package in deps["dependencies"]:
             print(package)
 
     if deps["optional-dependencies"]:
         for dep in deps["optional-dependencies"]:
-            print(f"# optional dependencies for {dep}")
+            if args.comment:
+                print(f"# optional dependencies for {dep}")
             for package in deps["optional-dependencies"][dep]:
                 print(package)
 
