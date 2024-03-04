@@ -1,0 +1,34 @@
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'The version of the project to publish'
+        type: string
+        required: true
+
+jobs:
+  pypi-publish:
+    name: Upload release to test PyPI
+    runs-on: ubuntu-latest
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/p/pyp2req
+    permissions:
+      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v5
+
+      - name: Build package
+        run: SETUPTOOLS_SCM_PRETEND_VERSION=${{ inputs.version }} python3 -m pip wheel . --wheel-dir dist/ --no-deps
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheel
+          path: ${{runner.workspace}}/dist/*.whl
+
+      - name: Publish package distributions to test PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
