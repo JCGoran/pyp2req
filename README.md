@@ -1,6 +1,7 @@
 # pyp2req - pyproject.toml to requirements.txt converter
 
 Have you ever wanted to obtain the dependencies from a `pyproject.toml` file in a `requirements.txt` format (i.e. in a format you can pass to `pip install -r`)?
+
 If so, you've found the correct tool.
 
 ## What this does
@@ -20,7 +21,7 @@ In case you have a project which already has a build system (say, CMake), and wi
 
 ## Why not use X instead?
 
-- pip: does not support actually parsing the `pyproject.toml` file, or installing only the dependencies without also installing the main project (keep a close eye on [this issue](https://github.com/pypa/pip/issues/11440) though!)
+- pip: does not support actually parsing the `pyproject.toml` file, or installing only the dependencies without also installing the main project (keep a close eye on [this issue](https://github.com/pypa/pip/issues/11440) and [PEP 735](https://peps.python.org/pep-0735/) though!)
 - Poetry: can install optional dependencies, but only those defined in the `[tool.poetry]` key
 - pip-tools: close, but it actually does too much, and pins _all_ dependencies (including any transitive dependencies) to specific versions, which is great if you want to be very strict with your versioning, but not so much if want to be a bit more relaxed. It also tries to resolve all of the dependencies first, making it a bit slow
 
@@ -67,6 +68,8 @@ pyp2req -t [TYPE] /path/to/dir_with_pyproject
 ```
 
 where you can replace `[TYPE]` with any of the optional dependencies specified (it's also additive, meaning you can specify multiple dependencies).
+
+Note that if you _only_ want the optional dependencies, you need to disable the build and run dependencies by adding `-b -r` to the above invocation.
 
 ### Listing optional dependencies
 
