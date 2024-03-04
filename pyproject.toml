@@ -13,7 +13,7 @@ readme = "README.md"
 scripts = { pyp2req = "pyp2req:main" }
 
 [project.urls]
-source = "https://github.com/JCGoran/pyp2req"
+GitHub = "https://github.com/JCGoran/pyp2req"
 
 
 [build-system]
