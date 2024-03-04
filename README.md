@@ -41,7 +41,7 @@ pyp2req /path/to/dir_with_pyproject
 
 For instance, here's the output of `pyp2req` on this project:
 
-```sh
+```plaintext
 # build time dependencies
 setuptools
 setuptools-scm>=8.0.0
