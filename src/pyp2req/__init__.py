@@ -1,8 +1,10 @@
+#!/usr/bin/env python3
 """
 Small script that can parse TOML files without any dependencies
 """
 import sys
 from argparse import ArgumentParser
+from collections import defaultdict
 from pathlib import Path
 from typing import Optional
 from typing import Union
@@ -19,10 +21,15 @@ def parse_args():
     """
     Main module
     """
-    parser = ArgumentParser()
+    parser = ArgumentParser(
+        description=(
+            "Parse a pyproject.toml file and output dependencies "
+            "in requirements.txt format"
+        ),
+    )
     parser.add_argument(
         "file",
-        help="the path to the `pyproject.toml` file",
+        help="the path to the pyproject.toml file",
     )
     parser.add_argument(
         "--runtime",
@@ -39,7 +46,10 @@ def parse_args():
     parser.add_argument(
         "--type",
         "-t",
-        help="the type of optional dependency to show (default: show packages from all types)",
+        help=(
+            "the type of optional dependency to show "
+            "(default: show packages from all optional dependency types)"
+        ),
     )
     parser.add_argument(
         "--list",
@@ -67,6 +77,8 @@ def parse_file(file: Union[str, Path], /) -> dict:
 def parse_array_specifier(
     data: dict,
     specifier: str,
+    *,
+    strict: bool = False,
 ) -> list[str]:
     """
     Parse a given specifier and return the contents
@@ -76,10 +88,13 @@ def parse_array_specifier(
     result = {**data}
     for index, key in enumerate(keys):
         if key not in result:
-            raise KeyError(
-                f"The specifier {key} at position {index} (0-indexed) of '{specifier}' is invalid"
-            )
-        result = result[key]
+            if strict:
+                raise KeyError(
+                    f"The specifier {key} at position {index} (0-indexed) of '{specifier}' is invalid"
+                )
+            result = result.get(key, {})
+        else:
+            result = result[key]
 
     return list(result)
 
@@ -89,35 +104,52 @@ def main():
 
     content = parse_file(args.file)
 
+    deps = {
+        "build-system": [],
+        "dependencies": [],
+        "optional-dependencies": defaultdict(list),
+    }
+
     if args.list:
         for key in parse_array_specifier(content, "project.optional-dependencies"):
             print(key)
         return
 
     if args.build:
-        print("# build time dependencies")
         for package in parse_array_specifier(content, "build-system.requires"):
-            print(package)
+            deps["build-system"].append(package)
 
     if args.runtime:
-        print("# runtime dependencies")
         for package in parse_array_specifier(content, "project.dependencies"):
-            print(package)
+            deps["dependencies"].append(package)
 
     if args.type:
-        opt_dep_types = parse_array_specifier(content, "project.optional-dependencies")
-        print(f"# dependencies for {args.type}")
         for package in parse_array_specifier(
             content, f"project.optional-dependencies.{args.type}"
         ):
-            print(package)
+            deps["optional-dependencies"][args.type].append(package)
     else:
         opt_dep_types = parse_array_specifier(content, "project.optional-dependencies")
         for opt_dep in opt_dep_types:
-            print(f"# dependencies for {opt_dep}")
             for package in parse_array_specifier(
                 content, f"project.optional-dependencies.{opt_dep}"
             ):
+                deps["optional-dependencies"][opt_dep].append(package)
+
+    if deps["build-system"]:
+        print("# build time dependencies")
+        for package in deps["build-system"]:
+            print(package)
+
+    if deps["dependencies"]:
+        print("# run time dependencies")
+        for package in deps["dependencies"]:
+            print(package)
+
+    if deps["optional-dependencies"]:
+        for dep in deps["optional-dependencies"]:
+            print(f"# optional dependencies for {dep}")
+            for package in deps["optional-dependencies"][dep]:
                 print(package)
 
 
