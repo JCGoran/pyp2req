@@ -39,6 +39,16 @@ To get all dependencies, pass the directory containing the `pyproject.toml` file
 pyp2req /path/to/dir_with_pyproject
 ```
 
+For instance, here's the output of `pyp2req` on this project:
+
+```sh
+# build time dependencies
+setuptools
+setuptools-scm>=8.0.0
+# run time dependencies
+tomli;python_version<'3.11'
+```
+
 ## Customization
 
 By default, all of the dependencies (build, run, optional) are shown, but this can be customized.
