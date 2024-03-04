@@ -28,8 +28,8 @@ def parse_args():
         ),
     )
     parser.add_argument(
-        "file",
-        help="the path to the pyproject.toml file",
+        "dir",
+        help="the path to the dir containing the pyproject.toml file",
     )
     parser.add_argument(
         "--runtime",
@@ -46,6 +46,7 @@ def parse_args():
     parser.add_argument(
         "--type",
         "-t",
+        nargs="+",
         help=(
             "the type of optional dependency to show "
             "(default: show packages from all optional dependency types)"
@@ -63,7 +64,7 @@ def parse_args():
 
 def parse_file(file: Union[str, Path], /) -> dict:
     """
-    Parse the ``pyproject.toml`` file
+    Parse the dir containing the ``pyproject.toml`` file
     """
 
     if not Path(file).exists():
@@ -102,7 +103,7 @@ def parse_array_specifier(
 def main():
     args = parse_args()
 
-    content = parse_file(args.file)
+    content = parse_file(Path(args.dir) / "pyproject.toml")
 
     deps = {
         "build-system": [],
@@ -124,10 +125,11 @@ def main():
             deps["dependencies"].append(package)
 
     if args.type:
-        for package in parse_array_specifier(
-            content, f"project.optional-dependencies.{args.type}"
-        ):
-            deps["optional-dependencies"][args.type].append(package)
+        for typ in args.type:
+            for package in parse_array_specifier(
+                content, f"project.optional-dependencies.{typ}"
+            ):
+                deps["optional-dependencies"][typ].append(package)
     else:
         opt_dep_types = parse_array_specifier(content, "project.optional-dependencies")
         for opt_dep in opt_dep_types:
