@@ -162,7 +162,3 @@ def main():
                 print(f"# optional dependencies for {dep}")
             for package in deps["optional-dependencies"][dep]:
                 print(package)
-
-
-if __name__ == "__main__":
-    main()
